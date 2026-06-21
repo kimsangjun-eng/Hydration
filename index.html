@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L-7 · Hydration Shell Simulator | Nobel Prep AP Chemistry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1a2744;
+    --navy-soft:#2e3c5c;
+    --gold:#c9a84c;
+    --gold-soft:#e8d9ad;
+    --bg:#f7f7f5;
+    --card:#ffffff;
+    --line:#e3e1da;
+    --grey-text:#5b6478;
+    --cation:#8b96a8;
+    --cation-dark:#6b7689;
+    --anion:#3f9e8a;
+    --anion-dark:#2c7d6c;
+    --o-red:#cf4747;
+    --o-red-dark:#a23535;
+    --h-blue:#cfe7f3;
+    --h-blue-dark:#9fc7dc;
+    --correct:#3f9e6c;
+    --wrong:#c0524a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--navy);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 0 60px;}
+
+  header.top{
+    background:var(--navy);
+    color:#fff;
+    padding:26px 32px 22px;
+  }
+  header.top .inner{max-width:1080px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--gold);
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  h1{margin:0;font-size:27px;font-weight:800;letter-spacing:-0.01em;}
+  .subtitle{margin:6px 0 0;font-size:14.5px;color:#c7cee0;font-weight:400;}
+  .series-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--navy);
+    background:var(--gold-soft);
+    border:1px solid var(--gold);
+    padding:5px 11px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+
+  nav.tabs{
+    display:flex;
+    gap:6px;
+    max-width:1080px;
+    margin:22px auto 0;
+    padding:0 32px;
+  }
+  .tab-btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    color:var(--grey-text);
+    background:transparent;
+    border:none;
+    border-bottom:3px solid transparent;
+    padding:11px 18px;
+    cursor:pointer;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .tab-btn:hover{color:var(--navy);}
+  .tab-btn.active{color:var(--navy);border-bottom-color:var(--gold);}
+
+  main{padding:0 32px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 24px;
+    margin-top:18px;
+    box-shadow:0 1px 2px rgba(26,39,68,0.04);
+  }
+
+  /* ---------- Explore layout ---------- */
+  .stage{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:16px;
+  }
+  .canvas-card{padding:0;overflow:hidden;position:relative;}
+  .canvas-shell{position:relative;width:100%;height:480px;background:
+    radial-gradient(circle at 30% 20%, #fbfbf9 0%, #f3f2ee 70%);
+  }
+  canvas{display:block;width:100%;height:100%;cursor:pointer;}
+
+  .legend{
+    position:absolute;
+    top:14px;
+    right:14px;
+    background:rgba(255,255,255,0.92);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 13px;
+    font-size:12px;
+    color:var(--navy-soft);
+    line-height:1.85;
+    backdrop-filter:blur(2px);
+  }
+  .legend .row{display:flex;align-items:center;gap:7px;}
+  .swatch{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block;border:1px solid rgba(0,0,0,0.15);}
+
+  .stage-caption{
+    position:absolute;
+    left:14px;
+    top:14px;
+    font-size:12.5px;
+    color:var(--navy-soft);
+    background:rgba(255,255,255,0.92);
+    border:1px solid var(--line);
+    padding:6px 11px;
+    border-radius:8px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  .controls{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:16px 22px;
+    border-top:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    border:1px solid var(--navy);
+    background:var(--navy);
+    color:#fff;
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    transition:opacity .15s ease;
+  }
+  .btn:hover{opacity:.85;}
+  .btn.ghost{background:transparent;color:var(--navy);border-color:var(--line);}
+  .btn.ghost:hover{border-color:var(--navy);}
+
+  .slider-wrap{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;}
+  .slider-wrap label{font-size:12.5px;color:var(--grey-text);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+  input[type=range]{
+    flex:1;
+    -webkit-appearance:none;
+    height:5px;
+    border-radius:3px;
+    background:var(--line);
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px;height:16px;border-radius:50%;
+    background:var(--gold);
+    border:2px solid var(--navy);
+    cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;
+    background:var(--gold);border:2px solid var(--navy);cursor:pointer;
+  }
+  .pct{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--navy);width:42px;text-align:right;}
+
+  .hint{font-size:12.5px;color:var(--grey-text);padding:0 22px 16px;}
+
+  /* zoom / detail panel */
+  .zoom-card{display:none;}
+  .zoom-card.show{display:block;}
+  .zoom-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .zoom-head h3{margin:0;font-size:16px;}
+  .zoom-head p{margin:3px 0 0;font-size:13px;color:var(--grey-text);}
+  .close-x{background:none;border:none;color:var(--grey-text);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px;}
+  .close-x:hover{color:var(--navy);}
+  .zoom-body{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:center;}
+  .zoom-canvas-wrap canvas{width:200px;height:200px;background:#fbfbf9;border:1px solid var(--line);border-radius:10px;}
+  .zoom-explain{font-size:13.5px;line-height:1.7;color:var(--navy-soft);}
+  .zoom-explain b{color:var(--navy);}
+  @media (max-width:560px){.zoom-body{grid-template-columns:1fr;}}
+
+  /* ---------- Challenge layout ---------- */
+  .quiz-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .quiz-progress{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--grey-text);}
+  .score-chip{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--gold-soft);border:1px solid var(--gold);color:var(--navy);padding:4px 10px;border-radius:20px;}
+
+  .q-text{font-size:16px;font-weight:600;margin:14px 0 16px;line-height:1.5;}
+  .q-visual{display:flex;justify-content:center;margin:10px 0 18px;}
+  .q-visual canvas{background:#fbfbf9;border:1px solid var(--line);border-radius:10px;}
+
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:600px){.options{grid-template-columns:1fr;}}
+  .opt-btn{
+    text-align:left;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    color:var(--navy);
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:13px 15px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt-btn:hover{border-color:var(--gold);}
+  .opt-btn.correct{border-color:var(--correct);background:#eef8f1;color:var(--correct);}
+  .opt-btn.wrong{border-color:var(--wrong);background:#fbeeec;color:var(--wrong);}
+  .opt-btn:disabled{cursor:default;}
+
+  .feedback{
+    margin-top:16px;
+    padding:13px 16px;
+    border-radius:10px;
+    font-size:13.5px;
+    line-height:1.65;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.ok{background:#eef8f1;border:1px solid var(--correct);color:#235c3f;}
+  .feedback.no{background:#fbeeec;border:1px solid var(--wrong);color:#7a2e28;}
+
+  .quiz-footer{display:flex;justify-content:flex-end;margin-top:18px;}
+
+  .summary{text-align:center;padding:36px 20px;}
+  .summary .big{font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:700;color:var(--navy);}
+  .summary p{color:var(--grey-text);font-size:14px;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <div>
+      <p class="eyebrow">Nobel Prep · AP Chemistry · Chapter 10</p>
+      <h1>Hydration Shell Simulator</h1>
+      <p class="subtitle">How an ionic lattice dissociates into hydrated cations and anions</p>
+    </div>
+    <span class="series-tag">L-7</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="explore">Explore</button>
+  <button class="tab-btn" data-tab="challenge">Challenge</button>
+</nav>
+
+<main class="wrap">
+
+  <!-- ============ EXPLORE PANEL ============ -->
+  <section class="panel active" id="panel-explore">
+    <div class="card" style="margin-top:18px;">
+      <strong>Hydration</strong> — when an ionic compound dissolves in water, polar water molecules surround
+      each ion. The <strong>oxygen</strong> atom of water (δ&#8315;) is attracted to <strong>cations</strong>,
+      while the <strong>hydrogen</strong> atoms (δ&#8314;) are attracted to <strong>anions</strong>. Drag the
+      slider — or press Play — to watch the lattice break apart.
+    </div>
+
+    <div class="card canvas-card">
+      <div class="canvas-shell">
+        <canvas id="exploreCanvas"></canvas>
+        <div class="stage-caption" id="stageCaption">0% dissolved</div>
+        <div class="legend">
+          <div class="row"><span class="swatch" style="background:var(--cation)"></span> Cation (+)</div>
+          <div class="row"><span class="swatch" style="background:var(--anion)"></span> Anion (&minus;)</div>
+          <div class="row"><span class="swatch" style="background:var(--o-red)"></span> O (δ&#8315;)</div>
+          <div class="row"><span class="swatch" style="background:var(--h-blue);border-color:#9fc7dc;"></span> H (δ&#8314;)</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="playBtn">▶ Play</button>
+        <button class="btn ghost" id="resetBtn">⟲ Reset</button>
+        <div class="slider-wrap">
+          <label for="progressSlider">LATTICE</label>
+          <input type="range" id="progressSlider" min="0" max="1000" value="0">
+          <label for="progressSlider">DISSOLVED</label>
+        </div>
+        <span class="pct" id="pctLabel">0%</span>
+      </div>
+      <div class="hint">Click any separated (hydrated) ion to inspect its hydration shell up close.</div>
+    </div>
+
+    <div class="card zoom-card" id="zoomCard">
+      <div class="zoom-head">
+        <div>
+          <h3 id="zoomTitle">Cation hydration shell</h3>
+          <p id="zoomSub">Water oxygen (δ&#8315;) faces the positive ion.</p>
+        </div>
+        <button class="close-x" id="zoomClose">✕</button>
+      </div>
+      <div class="zoom-body">
+        <div class="zoom-canvas-wrap"><canvas id="zoomCanvas" width="200" height="200"></canvas></div>
+        <div class="zoom-explain" id="zoomExplain">
+          The partial negative oxygen of each water molecule points toward this cation, while the partial
+          positive hydrogens point outward, away from the ion.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHALLENGE PANEL ============ -->
+  <section class="panel" id="panel-challenge">
+    <div class="card">
+      <div class="quiz-top">
+        <span class="quiz-progress" id="quizProgress">Question 1 / 5</span>
+        <span class="score-chip" id="scoreChip">Score: 0 / 0</span>
+      </div>
+
+      <div id="quizBody">
+        <p class="q-text" id="qText"></p>
+        <div class="q-visual" id="qVisualWrap" style="display:none;">
+          <canvas id="qCanvas" width="240" height="210"></canvas>
+        </div>
+        <div class="options" id="qOptions"></div>
+        <div class="feedback" id="qFeedback"></div>
+        <div class="quiz-footer">
+          <button class="btn" id="nextBtn" style="display:none;">Next →</button>
+        </div>
+      </div>
+
+      <div id="quizSummary" class="summary" style="display:none;">
+        <div class="big" id="summaryScore">0 / 5</div>
+        <p>Final score</p>
+        <button class="btn ghost" id="retryBtn" style="margin-top:14px;">↻ Try again</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* =========================================================================
+   L-7 Hydration Shell Simulator
+   ========================================================================= */
+
+/* ---------------- shared drawing helpers ---------------- */
+
+function drawDelta(ctx, x, y, sign, color){
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = "600 11px 'JetBrains Mono', monospace";
+  ctx.fillText('\u03B4', x, y);
+  ctx.font = "600 8px 'JetBrains Mono', monospace";
+  const w = ctx.measureText('\u03B4').width;
+  ctx.fillText(sign, x + w*0.62 + 4, y - 5);
+  ctx.restore();
+}
+
+function rot(px, py, ang){
+  const c = Math.cos(ang), s = Math.sin(ang);
+  return { x: px*c - py*s, y: px*s + py*c };
+}
+
+// Local frame: O at origin. Local +x side = H side (delta+). Local -x side = O lone-pair side (delta-).
+function waterAtomsLocal(bond){
+  const half = (104.5/2) * Math.PI/180;
+  const Hx =  Math.cos(half)*bond, Hy = Math.sin(half)*bond;
+  return {
+    O: {x:0, y:0},
+    H1:{x:Hx, y:Hy},
+    H2:{x:Hx, y:-Hy}
+  };
+}
+
+/**
+ * Compute world-space atom positions for a water molecule.
+ * anchor: {x,y} point in space the molecule occupies
+ * dirAngle: direction (radians) from anchor toward whatever it's facing (the ion, or just an orientation ref)
+ * facing: 'O' -> local -x axis (lone-pair / delta- side) points along dirAngle
+ *         'H' -> local +x axis (delta+ side) points along dirAngle
+ * bond: O-H bond length in px
+ */
+function waterAtomsWorld(anchor, dirAngle, facing, bond){
+  const local = waterAtomsLocal(bond);
+  // 'O' facing: O stays at the anchor (near the ion) and both H atoms swing OUTWARD, away from the ion.
+  // 'H' facing: O stays at the anchor, but here the anchor represents the outer reference point, so both
+  // H atoms swing INWARD, past the anchor, toward the ion (i.e. closer to the ion than O).
+  const rotAngle = (facing === 'O') ? dirAngle : (dirAngle - Math.PI);
+  const O  = rot(local.O.x,  local.O.y,  rotAngle);
+  const H1 = rot(local.H1.x, local.H1.y, rotAngle);
+  const H2 = rot(local.H2.x, local.H2.y, rotAngle);
+  return {
+    O:  {x:anchor.x+O.x,  y:anchor.y+O.y},
+    H1: {x:anchor.x+H1.x, y:anchor.y+H1.y},
+    H2: {x:anchor.x+H2.x, y:anchor.y+H2.y}
+  };
+}
+
+function drawWaterMolecule(ctx, anchor, dirAngle, facing, opts){
+  opts = opts || {};
+  const bond = opts.bond || 11;
+  const oR = opts.oR || 6.2;
+  const hR = opts.hR || 4.0;
+  const atoms = waterAtomsWorld(anchor, dirAngle, facing, bond);
+
+  ctx.save();
+  ctx.globalAlpha = opts.alpha != null ? opts.alpha : 1;
+
+  // bonds
+  ctx.strokeStyle = 'rgba(26,39,68,0.18)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(atoms.O.x, atoms.O.y); ctx.lineTo(atoms.H1.x, atoms.H1.y);
+  ctx.moveTo(atoms.O.x, atoms.O.y); ctx.lineTo(atoms.H2.x, atoms.H2.y);
+  ctx.stroke();
+
+  // H atoms
+  [atoms.H1, atoms.H2].forEach(h=>{
+    ctx.beginPath();
+    ctx.fillStyle = getCss('--h-blue');
+    ctx.strokeStyle = getCss('--h-blue-dark');
+    ctx.lineWidth = 1;
+    ctx.arc(h.x, h.y, hR, 0, Math.PI*2);
+    ctx.fill(); ctx.stroke();
+  });
+
+  // O atom
+  ctx.beginPath();
+  ctx.fillStyle = getCss('--o-red');
+  ctx.strokeStyle = getCss('--o-red-dark');
+  ctx.lineWidth = 1;
+  ctx.arc(atoms.O.x, atoms.O.y, oR, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+
+  if(opts.labeled){
+    const perpX = -Math.sin(dirAngle), perpY = Math.cos(dirAngle);
+    const oLabelPos = { x: atoms.O.x + perpX*12, y: atoms.O.y + perpY*12 };
+    drawDelta(ctx, oLabelPos.x, oLabelPos.y, '\u2212', getCss('--o-red-dark'));
+    [atoms.H1, atoms.H2].forEach(h=>{
+      const hx = h.x + (h.x-atoms.O.x)*0.55;
+      const hy = h.y + (h.y-atoms.O.y)*0.55;
+      drawDelta(ctx, hx, hy, '+', getCss('--h-blue-dark'));
+    });
+  }
+
+  ctx.restore();
+}
+
+let cssCache = {};
+function getCss(varName){
+  if(cssCache[varName]) return cssCache[varName];
+  const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  cssCache[varName] = v;
+  return v;
+}
+
+function drawIon(ctx, x, y, charge, r, opts){
+  opts = opts || {};
+  ctx.save();
+  ctx.globalAlpha = opts.alpha != null ? opts.alpha : 1;
+  const grad = ctx.createRadialGradient(x-r*0.35, y-r*0.35, r*0.15, x, y, r);
+  if(charge === 1){
+    grad.addColorStop(0, '#c4cad4');
+    grad.addColorStop(1, getCss('--cation-dark'));
+  } else {
+    grad.addColorStop(0, '#7fd1bd');
+    grad.addColorStop(1, getCss('--anion-dark'));
+  }
+  ctx.beginPath();
+  ctx.fillStyle = grad;
+  ctx.arc(x, y, r, 0, Math.PI*2);
+  ctx.fill();
+  if(opts.ring){
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = getCss('--gold');
+    ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(26,39,68,0.85)';
+  ctx.font = `700 ${Math.round(r*0.95)}px 'Inter', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(charge===1 ? '+' : '\u2212', x, y+0.5);
+  ctx.restore();
+}
+
+function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+function lerp(a,b,t){ return a + (b-a)*t; }
+
+/* ========================================================================
+   EXPLORE TAB
+   ======================================================================== */
+
+const CONFIG = {
+  rows: 3, cols: 4,
+  cellSize: 44,
+  ionRadius: 14,
+  shellRadius: 27,
+  watersPerShell: 3,
+  bulkWaterCount: 9,
+  bond: 10,
+  oR: 5.6, hR: 3.6
+};
+
+let ions = [];
+let bulkWaters = [];
+let exploreCanvas, exploreCtx, exploreDpr=1;
+let progress = 0;
+let playing = false;
+let rafId = null;
+let lastTs = null;
+let selectedIon = null;
+
+function buildLattice(){
+  ions = [];
+  const {rows, cols} = CONFIG;
+  let id = 0;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const charge = ((r+c)%2===0) ? 1 : -1;
+      const dist = Math.hypot(r-(rows-1)/2, c-(cols-1)/2) + Math.random()*0.35;
+      ions.push({
+        id:id++, r, c, charge, dist,
+        latticeX:0, latticeY:0, targetX:0, targetY:0,
+        x:0, y:0, t:0,
+        order:0, thresholdStart:0, thresholdEnd:0,
+        waters:[]
+      });
+    }
+  }
+  const orderedIds = ions.map(i=>i.id).sort((a,b)=> ions[b].dist - ions[a].dist);
+  const N = ions.length;
+  orderedIds.forEach((ionId, i)=>{
+    const ion = ions[ionId];
+    ion.order = i;
+    ion.thresholdStart = i / N;
+    ion.thresholdEnd = (i + 1) / N;
+  });
+  ions.forEach(ion=>{
+    const base = Math.random()*Math.PI*2;
+    ion.waters = [];
+    for(let k=0;k<CONFIG.watersPerShell;k++){
+      ion.waters.push({ angle: base + k*(2*Math.PI/CONFIG.watersPerShell) + (Math.random()-0.5)*0.3 });
+    }
+  });
+  const firstCation = [...ions].sort((a,b)=>a.thresholdStart-b.thresholdStart).find(i=>i.charge===1);
+  const firstAnion  = [...ions].sort((a,b)=>a.thresholdStart-b.thresholdStart).find(i=>i.charge===-1);
+  if(firstCation) firstCation.waters[0].labeled = true;
+  if(firstAnion)  firstAnion.waters[0].labeled = true;
+}
+
+function layoutExplore(){
+  const w = exploreCanvas.clientWidth, h = exploreCanvas.clientHeight;
+  const {rows, cols, cellSize} = CONFIG;
+  const latticeW = (cols-1)*cellSize, latticeH = (rows-1)*cellSize;
+  const cx = w*0.36, cy = h*0.52;
+
+  ions.forEach(ion=>{
+    ion.latticeX = cx - latticeW/2 + ion.c*cellSize;
+    ion.latticeY = cy - latticeH/2 + ion.r*cellSize;
+  });
+
+  const golden = 137.508*Math.PI/180;
+  ions.forEach(ion=>{
+    const k = ion.order;
+    const radius = 78 + k*(Math.min(w,h)*0.05);
+    const angle = k*golden + 0.4;
+    let tx = cx + Math.cos(angle)*radius;
+    let ty = cy + Math.sin(angle)*radius*0.85;
+    const margin = 46;
+    tx = clamp(tx, margin, w-margin);
+    ty = clamp(ty, margin, h-margin);
+    ion.targetX = tx; ion.targetY = ty;
+  });
+
+  if(bulkWaters.length === 0){
+    for(let i=0;i<CONFIG.bulkWaterCount;i++){
+      bulkWaters.push({
+        bx: Math.random()*w, by: Math.random()*h,
+        phase: Math.random()*Math.PI*2,
+        speed: 0.0005 + Math.random()*0.0004,
+        ampX: 5+Math.random()*7, ampY: 5+Math.random()*7,
+        dir: Math.random()*Math.PI*2
+      });
+    }
+  }
+}
+
+function resizeExploreCanvas(){
+  exploreDpr = window.devicePixelRatio || 1;
+  const rect = exploreCanvas.getBoundingClientRect();
+  exploreCanvas.width = Math.round(rect.width*exploreDpr);
+  exploreCanvas.height = Math.round(rect.height*exploreDpr);
+  exploreCtx.setTransform(exploreDpr,0,0,exploreDpr,0,0);
+  layoutExplore();
+  drawExplore();
+}
+
+function updateIonPositions(){
+  const N = ions.length;
+  ions.forEach(ion=>{
+    let t;
+    if(progress <= ion.thresholdStart) t = 0;
+    else if(progress >= ion.thresholdEnd) t = 1;
+    else t = (progress - ion.thresholdStart) / (ion.thresholdEnd - ion.thresholdStart);
+    ion.t = easeOutCubic(clamp(t,0,1));
+    ion.x = lerp(ion.latticeX, ion.targetX, ion.t);
+    ion.y = lerp(ion.latticeY, ion.targetY, ion.t);
+  });
+}
+
+function drawExplore(){
+  const w = exploreCanvas.clientWidth, h = exploreCanvas.clientHeight;
+  const ctx = exploreCtx;
+  ctx.clearRect(0,0,w,h);
+
+  updateIonPositions();
+
+  // bulk (free) water molecules drifting in background
+  const now = performance.now();
+  bulkWaters.forEach(bw=>{
+    const dx = Math.sin(now*bw.speed + bw.phase)*bw.ampX;
+    const dy = Math.cos(now*bw.speed*1.3 + bw.phase)*bw.ampY;
+    const x = bw.bx + dx, y = bw.by + dy;
+    drawWaterMolecule(ctx, {x,y}, bw.dir, 'O', {alpha:0.55, bond:9, oR:4.6, hR:3.0});
+  });
+
+  // approach arrows (only visible early on, fading out)
+  if(progress < 0.18){
+    const arrowAlpha = 1 - (progress/0.18);
+    ctx.save();
+    ctx.globalAlpha = arrowAlpha*0.55;
+    ctx.strokeStyle = getCss('--navy-soft');
+    ctx.lineWidth = 1.3;
+    const cx = w*0.36, cy = h*0.52;
+    const arrows = [[cx-90,cy-110],[cx+70,cy-120],[cx+120,cy+10],[cx-110,cy+100]];
+    arrows.forEach(([ax,ay])=>{
+      const tx = cx + (ax-cx)*0.45, ty = cy + (ay-cy)*0.45;
+      ctx.beginPath();
+      ctx.moveTo(ax,ay); ctx.lineTo(tx,ty);
+      ctx.stroke();
+      const ang = Math.atan2(ty-ay, tx-ax);
+      ctx.beginPath();
+      ctx.moveTo(tx,ty);
+      ctx.lineTo(tx-8*Math.cos(ang-0.4), ty-8*Math.sin(ang-0.4));
+      ctx.lineTo(tx-8*Math.cos(ang+0.4), ty-8*Math.sin(ang+0.4));
+      ctx.closePath();
+      ctx.fillStyle = getCss('--navy-soft');
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  // ions still in lattice (t < 1 means not yet fully separated) — draw bonds-ish lattice glow for t=0 ions
+  ions.forEach(ion=>{
+    if(ion.t < 0.999){
+      drawIon(exploreCtx, ion.x, ion.y, ion.charge, CONFIG.ionRadius, {alpha:1});
+    }
+  });
+
+  // separated (dissolving/dissolved) ions with hydration shells
+  ions.forEach(ion=>{
+    if(ion.t > 0.001){
+      const shellAlpha = ion.t;
+      ion.waters.forEach(wm=>{
+        const anchor = {
+          x: ion.x + Math.cos(wm.angle)*CONFIG.shellRadius,
+          y: ion.y + Math.sin(wm.angle)*CONFIG.shellRadius
+        };
+        const facing = ion.charge === 1 ? 'O' : 'H';
+        drawWaterMolecule(exploreCtx, anchor, wm.angle, facing, {
+          alpha: shellAlpha, bond:CONFIG.bond, oR:CONFIG.oR, hR:CONFIG.hR,
+          labeled: !!wm.labeled && shellAlpha > 0.6
+        });
+      });
+    }
+    if(ion.t >= 0.999){
+      drawIon(exploreCtx, ion.x, ion.y, ion.charge, CONFIG.ionRadius, {
+        alpha:1, ring: selectedIon && selectedIon.id===ion.id
+      });
+    } else if(ion.t > 0.001){
+      drawIon(exploreCtx, ion.x, ion.y, ion.charge, CONFIG.ionRadius, {alpha:1});
+    }
+  });
+}
+
+function exploreLoop(ts){
+  if(lastTs == null) lastTs = ts;
+  const dt = ts - lastTs;
+  lastTs = ts;
+  if(playing){
+    progress = clamp(progress + dt*0.00009, 0, 1);
+    syncSliderFromProgress();
+    if(progress >= 1){ playing = false; setPlayButtonState(); }
+  }
+  drawExplore();
+  rafId = requestAnimationFrame(exploreLoop);
+}
+
+function syncSliderFromProgress(){
+  const slider = document.getElementById('progressSlider');
+  slider.value = Math.round(progress*1000);
+  updatePctLabel();
+}
+function updatePctLabel(){
+  const pct = Math.round(progress*100);
+  document.getElementById('pctLabel').textContent = pct + '%';
+  document.getElementById('stageCaption').textContent = pct + '% dissolved';
+}
+
+function setPlayButtonState(){
+  document.getElementById('playBtn').textContent = playing ? '⏸ Pause' : '▶ Play';
+}
+
+function hitTestIon(mx, my){
+  for(let i=ions.length-1;i>=0;i--){
+    const ion = ions[i];
+    if(ion.t < 0.999) continue;
+    const d = Math.hypot(mx-ion.x, my-ion.y);
+    if(d <= CONFIG.ionRadius + CONFIG.shellRadius + 14) return ion;
+  }
+  return null;
+}
+
+function openZoom(ion){
+  selectedIon = ion;
+  const card = document.getElementById('zoomCard');
+  card.classList.add('show');
+  const isCation = ion.charge === 1;
+  document.getElementById('zoomTitle').textContent = isCation ? 'Cation hydration shell' : 'Anion hydration shell';
+  document.getElementById('zoomSub').textContent = isCation
+    ? 'Water oxygen (\u03B4\u2212) faces the positive ion.'
+    : 'Water hydrogen (\u03B4+) faces the negative ion.';
+  document.getElementById('zoomExplain').innerHTML = isCation
+    ? 'The <b>oxygen</b> atom carries a partial negative charge (\u03B4\u2212) because it pulls shared electrons toward itself. That negative region is electrostatically attracted to the <b>cation</b>, so oxygen points inward while both hydrogens point outward.'
+    : 'Each <b>hydrogen</b> atom carries a partial positive charge (\u03B4+). Both hydrogens orient toward the <b>anion</b>, while the oxygen — and its concentrated negative character — points away from the ion.';
+
+  const zc = document.getElementById('zoomCanvas');
+  const zctx = zc.getContext('2d');
+  zctx.clearRect(0,0,200,200);
+  const cx=100, cy=100;
+  drawIon(zctx, cx, cy, ion.charge, 22, {ring:true});
+  const facing = isCation ? 'O' : 'H';
+  const n = 5;
+  for(let k=0;k<n;k++){
+    const ang = (k/n)*Math.PI*2 + 0.3;
+    const anchor = { x: cx+Math.cos(ang)*52, y: cy+Math.sin(ang)*52 };
+    drawWaterMolecule(zctx, anchor, ang, facing, { bond:16, oR:9, hR:6, labeled:true });
+  }
+  card.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function closeZoom(){
+  selectedIon = null;
+  document.getElementById('zoomCard').classList.remove('show');
+}
+
+function initExplore(){
+  exploreCanvas = document.getElementById('exploreCanvas');
+  exploreCtx = exploreCanvas.getContext('2d');
+  buildLattice();
+
+  new ResizeObserver(resizeExploreCanvas).observe(exploreCanvas);
+  resizeExploreCanvas();
+
+  document.getElementById('playBtn').addEventListener('click', ()=>{
+    if(progress >= 1) progress = 0;
+    playing = !playing;
+    setPlayButtonState();
+  });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    playing = false; setPlayButtonState();
+    progress = 0;
+    closeZoom();
+    syncSliderFromProgress();
+  });
+  document.getElementById('progressSlider').addEventListener('input', (e)=>{
+    playing = false; setPlayButtonState();
+    progress = clamp(parseInt(e.target.value,10)/1000, 0, 1);
+    updatePctLabel();
+  });
+  document.getElementById('zoomClose').addEventListener('click', closeZoom);
+
+  exploreCanvas.addEventListener('click', (e)=>{
+    const rect = exploreCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const hit = hitTestIon(mx, my);
+    if(hit) openZoom(hit); else closeZoom();
+  });
+
+  updatePctLabel();
+  rafId = requestAnimationFrame(exploreLoop);
+}
+
+/* ========================================================================
+   TABS
+   ======================================================================== */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ========================================================================
+   CHALLENGE TAB
+   ======================================================================== */
+
+function buildQuizBank(){
+  const bank = [];
+
+  bank.push({
+    type:'static',
+    q:'What is the correct definition of hydration?',
+    options:[
+      'The process by which an ionic compound dissolves and water molecules surround its ions',
+      'The process by which water evaporates from a solution',
+      'The chemical reaction that breaks O\u2013H bonds in water',
+      'The formation of a crystal lattice from dissolved ions'
+    ],
+    correct:0,
+    explain:'Hydration is the surrounding of dissolved ions by water molecules, driven by ion\u2013dipole attraction.'
+  });
+
+  bank.push({
+    type:'static',
+    q:'Which part of a water molecule is attracted to a cation (positive ion)?',
+    options:['The oxygen atom (\u03B4\u2212)','One hydrogen atom only (\u03B4+)','Neither atom \u2014 water is nonpolar','Both atoms equally, with no preferred orientation'],
+    correct:0,
+    explain:'Oxygen carries the partial negative charge (\u03B4\u2212), so it is electrostatically attracted to positive cations.'
+  });
+
+  bank.push({
+    type:'static',
+    q:'Which part of a water molecule is attracted to an anion (negative ion)?',
+    options:['The oxygen atom (\u03B4\u2212)','The hydrogen atoms (\u03B4+)','The lone pairs on oxygen','Nothing \u2014 anions repel water'],
+    correct:1,
+    explain:'Hydrogen atoms carry the partial positive charge (\u03B4+), so they orient toward negative anions.'
+  });
+
+  bank.push({
+    type:'static',
+    q:'Why does an ionic solid dissolve in water at all, given the strong electrostatic attraction holding its lattice together?',
+    options:[
+      'Water molecules are larger than the ions, so they physically push the lattice apart',
+      'Ion\u2013dipole attractions between water and the ions can release enough energy to overcome lattice energy',
+      'Water has no charge, so it cannot interact with ions',
+      'Ionic solids never truly dissolve \u2014 they only melt'
+    ],
+    correct:1,
+    explain:'Dissolution occurs when the energy released by hydrating the ions (ion\u2013dipole interactions) is comparable to or exceeds the lattice energy holding the solid together.'
+  });
+
+  bank.push({ type:'visual-orientation', ionCharge: 1 });
+  bank.push({ type:'visual-orientation', ionCharge: -1 });
+
+  // shuffle and take 5
+  for(let i=bank.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [bank[i],bank[j]] = [bank[j],bank[i]];
+  }
+  return bank.slice(0,5);
+}
+
+let quizBank = [];
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+
+function renderVisualOrientationCanvas(canvas, ionCharge, waterFacingShown, correctAnswerIsYes){
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width, canvas.height);
+  const cx = canvas.width/2, cy = canvas.height*0.66;
+  const ionR = 22;
+  drawIon(ctx, cx, cy, ionCharge, ionR, {});
+  const ang = -Math.PI/2;
+  const dist = ionR + 30;
+  const anchor = { x: cx+Math.cos(ang)*dist, y: cy+Math.sin(ang)*dist };
+
+  ctx.save();
+  ctx.setLineDash([3,4]);
+  ctx.strokeStyle = 'rgba(26,39,68,0.22)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - ionR);
+  ctx.lineTo(anchor.x, anchor.y + 10);
+  ctx.stroke();
+  ctx.restore();
+
+  drawWaterMolecule(ctx, anchor, ang, waterFacingShown, { bond:14, oR:8, hR:5, labeled:true });
+}
+
+function loadQuestion(){
+  const card = document.getElementById('qFeedback');
+  card.classList.remove('show','ok','no');
+  document.getElementById('nextBtn').style.display = 'none';
+  quizAnswered = false;
+
+  const item = quizBank[quizIndex];
+  document.getElementById('quizProgress').textContent = `Question ${quizIndex+1} / ${quizBank.length}`;
+  document.getElementById('scoreChip').textContent = `Score: ${quizScore} / ${quizIndex}`;
+
+  const optWrap = document.getElementById('qOptions');
+  optWrap.innerHTML = '';
+  const visualWrap = document.getElementById('qVisualWrap');
+
+  if(item.type === 'static'){
+    visualWrap.style.display = 'none';
+    document.getElementById('qText').textContent = item.q;
+    item.options.forEach((opt, idx)=>{
+      const b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.textContent = opt;
+      b.addEventListener('click', ()=> handleAnswer(idx === item.correct, b, item.explain));
+      optWrap.appendChild(b);
+    });
+  } else if(item.type === 'visual-orientation'){
+    visualWrap.style.display = 'flex';
+    const isCation = item.ionCharge === 1;
+    const showCorrect = Math.random() < 0.5;
+    const correctFacing = isCation ? 'O' : 'H';
+    const shownFacing = showCorrect ? correctFacing : (correctFacing === 'O' ? 'H' : 'O');
+    item._shownFacing = shownFacing;
+    item._showCorrect = showCorrect;
+
+    document.getElementById('qText').textContent =
+      `Look at the ${isCation ? 'cation' : 'anion'} below with its water molecule. Is the water oriented correctly?`;
+    renderVisualOrientationCanvas(document.getElementById('qCanvas'), item.ionCharge, shownFacing, showCorrect);
+
+    const explainCorrect = isCation
+      ? 'For a cation, water\u2019s oxygen (\u03B4\u2212) must face the ion since opposite charges attract.'
+      : 'For an anion, water\u2019s hydrogens (\u03B4+) must face the ion since opposite charges attract.';
+
+    const yesBtn = document.createElement('button');
+    yesBtn.className = 'opt-btn'; yesBtn.textContent = 'Yes, correctly oriented';
+    yesBtn.addEventListener('click', ()=> handleAnswer(showCorrect === true, yesBtn, explainCorrect));
+
+    const noBtn = document.createElement('button');
+    noBtn.className = 'opt-btn'; noBtn.textContent = 'No, incorrectly oriented';
+    noBtn.addEventListener('click', ()=> handleAnswer(showCorrect === false, noBtn, explainCorrect));
+
+    optWrap.appendChild(yesBtn);
+    optWrap.appendChild(noBtn);
+  }
+}
+
+function handleAnswer(isCorrect, clickedBtn, explainText){
+  if(quizAnswered) return;
+  quizAnswered = true;
+  if(isCorrect) quizScore++;
+
+  document.querySelectorAll('#qOptions .opt-btn').forEach(b=> b.disabled = true);
+  clickedBtn.classList.add(isCorrect ? 'correct' : 'wrong');
+
+  const fb = document.getElementById('qFeedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'no');
+  fb.textContent = (isCorrect ? '✓ Correct. ' : '✗ Not quite. ') + explainText;
+
+  document.getElementById('scoreChip').textContent = `Score: ${quizScore} / ${quizIndex+1}`;
+  document.getElementById('nextBtn').style.display = 'inline-flex';
+}
+
+function nextQuestion(){
+  quizIndex++;
+  if(quizIndex >= quizBank.length){
+    showSummary();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showSummary(){
+  document.getElementById('quizBody').style.display = 'none';
+  document.getElementById('quizSummary').style.display = 'block';
+  document.getElementById('summaryScore').textContent = `${quizScore} / ${quizBank.length}`;
+}
+
+function startQuiz(){
+  quizBank = buildQuizBank();
+  quizIndex = 0;
+  quizScore = 0;
+  document.getElementById('quizBody').style.display = 'block';
+  document.getElementById('quizSummary').style.display = 'none';
+  loadQuestion();
+}
+
+document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+document.getElementById('retryBtn').addEventListener('click', startQuiz);
+
+/* ---------------- init ---------------- */
+initExplore();
+startQuiz();
+
+</script>
+</body>
+</html>
